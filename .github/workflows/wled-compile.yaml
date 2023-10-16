@@ -1,4 +1,4 @@
-name: WLED compile
+name: WLED compile minishield
 
 on:
     workflow_dispatch:
@@ -22,13 +22,17 @@ jobs:
       run: |
         rm -rf /tmp/WLEDtemp/* || true
         mkdir -p /tmp/WLEDtemp
-        wget https://api.github.com/repos/Aircoookie/WLED/zipball/v0.14.0 -O /tmp/WLEDtemp/mm.zip
+        wget https://github.com/Aircoookie/WLED/archive/refs/heads/main.zip -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
         echo '[env:custom_build]' >>platformio.ini
         echo 'extends = env:d1_mini' >>platformio.ini
-        echo 'build_flags = ${env:d1_mini.build_flags} -D USERMOD_MULTI_RELAY' >>platformio.ini
+        echo 'build_flags = ${env:d1_mini.build_flags} -D WLED_DISABLE_ESPNOW -D USERMOD_DALLASTEMPERATURE -D USERMOD_FOUR_LINE_DISPLAY' >>platformio.ini
+        echo 'lib_deps = ' >>platformio.ini
+        echo '  ${env:d1_mini.lib_deps}' >>platformio.ini
+        echo '  OneWire@~2.3.5' >>platformio.ini
+        echo '  olikraus/U8g2 @ ^2.28.8' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
     - name: Copy Files
